@@ -1,16 +1,42 @@
-# This is a sample Python script.
+"""
+*********************
+Volos Python API
+*********************
+Documentation at: https://github.com/Francisco-Pina/Business_Analytics
+"""
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+__author__ = 'Francisco Pina'
+__copyright__ = '2022 Volos Portfolio Solutions, LLC.. All rights reserved'
+__version__ = '2.0'
+__interpreter__ = 'Anaconda - Python 3.9.5 64 bit'
+__maintainer__ = 'Francisco Pina'
+__email__ = 'francisco.pina@volossoftware.com'
+__status__ = 'In Progress'
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+class VolosAPI:
 
+    def __init__(self, volos_api_key):
+        self.volos_api_key = volos_api_key
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+    def get_url(self):
+        pass
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    def get_time_series(self):
+        pass
+
+    def get_metrics(self):
+        pass
+
+    def get_validation_data(self):
+        pass
+
+    def get_annual_returns(self):
+        pass
+
+    def save_to_csv(self):
+        pass
+
+    def trim_dates(self):
+        pass
+
