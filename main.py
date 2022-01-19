@@ -13,6 +13,13 @@ __maintainer__ = 'Francisco Pina'
 __email__ = 'francisco.pina@volossoftware.com'
 __status__ = 'In Progress'
 
+import json
+import requests
+import pandas as pd
+import io
+import os
+import datetime
+
 
 class VolosAPI:
 
@@ -39,4 +46,3 @@ class VolosAPI:
 
     def trim_dates(self):
         pass
-
