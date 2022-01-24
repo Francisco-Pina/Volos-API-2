@@ -80,9 +80,12 @@ class VolosAPI:
         obj = {"strategy_id": strategy_id}
         headers = {"x-api-key": self.volos_api_key}
 
-        output = requests.post(url, data=json.dumps(obj), headers=headers).json()
-
-        return output
+        x = requests.post(url, data=json.dumps(obj), headers=headers)
+        output = 'date' + x.text
+        data = [y.split(",") for y in output.split("\n")]
+        df = pd.DataFrame(data[1:], columns=data[0])
+        df.insert(2, 'Strategy_id', strategy_id)
+        return df
 
     def get_validation_data(self, strategy_id):
         self.set_strategy_api()
@@ -134,9 +137,10 @@ if __name__ == "__main__":
 
     strategy_id = 'cf9954a2-0f96-e8a7-58b8-5e198f670f6d'
 
-    df = vs.get_time_series(strategy_id)
+    # df = vs.get_time_series(strategy_id)
 
-    # df = vs.get_info_public_indexes()
+    df_metrics = vs.get_metrics(strategy_id)
 
-    print(df.columns)
-    print(df.head(5))
+    # print(df)
+    print(df_metrics)
+    print(df_metrics.columns)
