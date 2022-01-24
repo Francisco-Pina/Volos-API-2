@@ -2,7 +2,7 @@
 *********************
 Volos Python API
 *********************
-Documentation at: https://github.com/Francisco-Pina/Business_Analytics
+Documentation at: https://github.com/Francisco-Pina/Volos-API-2
 """
 
 __author__ = 'Francisco Pina'
@@ -127,13 +127,15 @@ class VolosAPI:
                                 'is_public', 'index_id', 'release_date']]
 
 
-vs = VolosAPI(volos_api_key='4rlmteg2uR2xCV5OtIzJqaTjcxT0edYsL7qPXE20')
+if __name__ == "__main__":
 
-strategy_id = 'cf9954a2-0f96-e8a7-58b8-5e198f670f6d'
+    vs = VolosAPI(volos_api_key='4rlmteg2uR2xCV5OtIzJqaTjcxT0edYsL7qPXE20')
 
-df = vs.get_time_series(strategy_id)
+    strategy_id = 'cf9954a2-0f96-e8a7-58b8-5e198f670f6d'
 
-#df = vs.get_info_public_indexes()
+    df = vs.get_time_series(strategy_id)
 
-print(df.columns)
-print(df.head(5))
+    #df = vs.get_info_public_indexes()
+
+    print(df.columns)
+    print(df.head(5))
