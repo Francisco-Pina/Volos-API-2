@@ -20,7 +20,7 @@ import pandas as pd
 
 class VolosAPI:
 
-    def __init__(self, volos_api_key):
+    def __init__(self, volos_api_key=None):
         self.volos_api_key = volos_api_key
         # by default, the api will be set to strategy
         self.api_endpoint = 'https://api-data-ci-w1.volossoftware.com/ci'
