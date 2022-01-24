@@ -21,6 +21,7 @@ import pandas as pd
 class VolosAPI:
 
     def __init__(self, volos_api_key=None):
+        # create function to test API key
         self.volos_api_key = volos_api_key
         # by default, the api will be set to strategy
         self.api_endpoint = 'https://api-data-ci-w1.volossoftware.com/ci'
@@ -32,9 +33,7 @@ class VolosAPI:
         self.api_endpoint = 'https://api-server-prod-e2.volossoftware.com'
 
     def get_url(self, endpoint):
-        url = self.api_endpoint + endpoint
-
-        return url
+        return self.api_endpoint + endpoint
 
     def get_time_series(self, strategy_id):
         self.set_strategy_api()
@@ -55,7 +54,7 @@ class VolosAPI:
         df.columns = ['date', 'series_value']
         df.dropna().reset_index(drop=True)
         df['Strategy_id'] = strategy_id
-        df = df.loc[:, ['Strategy_id', 'date', 'series_value']]
+        df = df.loc[:, ['date', 'series_value', 'Strategy_id']]
 
         return df
 
@@ -69,7 +68,7 @@ class VolosAPI:
         df['Peak'] = list_max
         df['Drawdown'] = df['series_value'] - df['Peak']
         df['Drawdown_Percent'] = df['Drawdown'] / df['Peak']
-        df = df.loc[:, ['Strategy_id', 'date', 'series_value', 'Drawdown', 'Drawdown_Percent']]
+        df = df.loc[:, ['date', 'series_value', 'Strategy_id', 'Drawdown', 'Drawdown_Percent']]
 
         return df
 
@@ -108,11 +107,14 @@ class VolosAPI:
     def get_annual_returns(self):
         pass
 
-    def save_to_csv(self):
-        pass
+    def save_to_csv(self, df, name):
+        """Saves file to current folder"""
+        return df.to_csv(name + '.csv', index=False)
 
-    def trim_dates(self):
-        pass
+    def trim_dates(self, df, start_date, end_date):
+        """Format: YYYY-MM-DD
+        Function includes start and end date"""
+        return df[(df['date'] >= start_date) & (df['date'] <= end_date)]
 
     def get_info_public_indexes(self):
         self.set_index_api()
@@ -128,14 +130,13 @@ class VolosAPI:
 
 
 if __name__ == "__main__":
-
     vs = VolosAPI(volos_api_key='4rlmteg2uR2xCV5OtIzJqaTjcxT0edYsL7qPXE20')
 
     strategy_id = 'cf9954a2-0f96-e8a7-58b8-5e198f670f6d'
 
     df = vs.get_time_series(strategy_id)
 
-    #df = vs.get_info_public_indexes()
+    # df = vs.get_info_public_indexes()
 
     print(df.columns)
     print(df.head(5))
