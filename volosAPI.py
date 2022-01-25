@@ -35,6 +35,35 @@ class VolosAPI:
     def get_url(self, endpoint):
         return self.api_endpoint + endpoint
 
+    def try_index_first(self, strategy_id):
+        index_df = self.get_info_public_indexes()
+
+        if strategy_id in index_df['strategy_id'].tolist():
+
+            index_id = index_df.loc[index_df['strategy_id'] == strategy_id, 'index_id'][0]
+
+            return self.get_time_series_index(index_id)
+
+        ########### Fix this, this is a mess
+
+        else:
+            self.set_strategy_api()
+            return strategy_id
+
+    def get_time_series_index(self, index_id):
+        self.set_index_api()
+        endpoint = '/index/prod/index/get_time_series'
+        url = self.get_url(endpoint=endpoint)
+
+        obj = {"index_id": index_id}
+        headers = {"content-type": "json"}
+        x = requests.post(url, data=json.dumps(obj), headers=headers)
+
+        index_df = pd.json_normalize(x.json())
+        index_df['Strategy_id'] = index_id
+
+        return index_df
+
     def get_time_series(self, strategy_id):
         self.set_strategy_api()
         endpoint = '/validation/get-validation-df'
@@ -133,7 +162,12 @@ class VolosAPI:
 
 
 if __name__ == "__main__":
-    vs = VolosAPI(volos_api_key='4rlmteg2uR2xCV5OtIzJqaTjcxT0edYsL7qPXE20')
+
+    temporary_file = open("./volos_api_key.txt", "rt")  # open lorem.txt for reading text
+    volos_api_key = temporary_file.read()  # read the entire file to string
+    temporary_file.close()  # close the file
+
+    vs = VolosAPI(volos_api_key=volos_api_key)
 
     strategy_id = 'cf9954a2-0f96-e8a7-58b8-5e198f670f6d'
 
