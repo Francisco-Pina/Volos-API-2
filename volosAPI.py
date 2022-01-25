@@ -38,17 +38,18 @@ class VolosAPI:
     def try_index_first(self, strategy_id):
         index_df = self.get_info_public_indexes()
 
-        if strategy_id in index_df['strategy_id'].tolist():
+        if strategy_id in index_df['strategy_id'].tolist() or strategy_id in index_df['index_ticker'].tolist():
 
-            index_id = index_df.loc[index_df['strategy_id'] == strategy_id, 'index_id'][0]
+            try:
+                index_id = index_df.loc[index_df['strategy_id'] == strategy_id, 'index_id'].item()
 
-            return self.get_time_series_index(index_id)
+            except:
+                index_id = index_df.loc[index_df['index_ticker'] == strategy_id, 'index_id'].item()
 
-        ########### Fix this, this is a mess
+            return True, index_id
 
         else:
-            self.set_strategy_api()
-            return strategy_id
+            return False, strategy_id
 
     def get_time_series_index(self, index_id):
         self.set_index_api()
@@ -65,25 +66,34 @@ class VolosAPI:
         return index_df
 
     def get_time_series(self, strategy_id):
-        self.set_strategy_api()
-        endpoint = '/validation/get-validation-df'
-        url = self.get_url(endpoint=endpoint)
 
-        obj = {"strategy_id": strategy_id}
-        headers = {"x-api-key": self.volos_api_key}
+        test_t_f, test_index = self.try_index_first(strategy_id)
 
-        output = requests.post(url, data=json.dumps(obj), headers=headers).json()
+        if test_t_f == False:
 
-        if list(output.keys())[0] == 'validation_csv_url':
-            df = pd.read_csv(output['validation_csv_url'])
-        else:
-            df = pd.json_normalize(output)
+            self.set_strategy_api()
+            endpoint = '/validation/get-validation-df'
+            url = self.get_url(endpoint=endpoint)
 
-        df = df.loc[:, ['date', 'index_value']]
-        df.columns = ['date', 'series_value']
-        df.dropna().reset_index(drop=True)
-        df['Strategy_id'] = strategy_id
-        df = df.loc[:, ['date', 'series_value', 'Strategy_id']]
+            obj = {"strategy_id": strategy_id}
+            headers = {"x-api-key": self.volos_api_key}
+
+            output = requests.post(url, data=json.dumps(obj), headers=headers).json()
+
+            if list(output.keys())[0] == 'validation_csv_url':
+                df = pd.read_csv(output['validation_csv_url'])
+            else:
+                df = pd.json_normalize(output)
+
+            df = df.loc[:, ['date', 'index_value']]
+            df.columns = ['date', 'series_value']
+            df.dropna().reset_index(drop=True)
+            df['Strategy_id'] = strategy_id
+            df = df.loc[:, ['date', 'series_value', 'Strategy_id']]
+
+        elif test_t_f == True:
+            ####
+            df = self.get_time_series_index(test_index)
 
         return df
 
@@ -162,19 +172,18 @@ class VolosAPI:
 
 
 if __name__ == "__main__":
-
-    temporary_file = open("./volos_api_key.txt", "rt")  # open lorem.txt for reading text
+    temporary_file = open("../volos_api_key.txt", "rt")  # open lorem.txt for reading text
     volos_api_key = temporary_file.read()  # read the entire file to string
     temporary_file.close()  # close the file
 
     vs = VolosAPI(volos_api_key=volos_api_key)
 
-    strategy_id = 'cf9954a2-0f96-e8a7-58b8-5e198f670f6d'
+    strategy_id = 'VOCCGLD100'
 
-    # df = vs.get_time_series(strategy_id)
+    df = vs.get_time_series(strategy_id)
 
-    df_metrics = vs.get_metrics(strategy_id)
+    # df_metrics = vs.get_metrics(strategy_id)
 
     # print(df)
-    print(df_metrics)
-    print(df_metrics.columns)
+    print(df)
+    print(df.columns)
