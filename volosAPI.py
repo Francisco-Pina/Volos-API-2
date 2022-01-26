@@ -112,9 +112,8 @@ class VolosAPI:
         df['Peak'] = list_max
         df['Drawdown'] = df['series_value'] - df['Peak']
         df['Drawdown_Percent'] = df['Drawdown'] / df['Peak']
-        df = df.loc[:, ['date', 'series_value', 'Strategy_id', 'Drawdown', 'Drawdown_Percent']]
 
-        return df
+        return df.loc[:, ['date', 'series_value', 'Strategy_id', 'Drawdown', 'Drawdown_Percent']]
 
     def get_metrics(self, strategy_id):
 
@@ -159,7 +158,20 @@ class VolosAPI:
                           'Profit_Prob', 'Sharpe_Ratio', 'Sortino_Ratio', 'Tail_Ratio']]
 
     def get_strategy_details(self, strategy_id):
-        pass
+
+        test_true_false, test_index, index_strat_id = self.try_index_first(strategy_id)
+        df = None
+
+        if not test_true_false:
+            # not working :(
+            # find how to use this endpoint
+            pass
+
+        elif test_true_false:
+            self.set_index_api()
+            df = self.get_info_public_indexes().loc[df['index_id'] == index_strat_id]
+
+        return df
 
     def get_validation_data(self, strategy_id):
         self.set_strategy_api()
