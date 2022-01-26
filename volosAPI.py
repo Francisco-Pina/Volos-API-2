@@ -133,14 +133,12 @@ class VolosAPI:
             output = 'date' + x.text
             data = [y.split(",") for y in output.split("\n")]
             df = pd.DataFrame(data[1:], columns=data[0]).dropna().tail(1).reset_index(drop=True)
-            df.insert(1, 'Strategy_id', index_strat_id)
+            df.insert(1, 'Strategy_id', strategy_id)
 
         elif test_true_false:
             self.set_index_api()
             endpoint = '/index_summary/prod/index_summary/metrics'
             url = self.get_url(endpoint=endpoint)
-
-            print(index_strat_id)
 
             obj = {"strategy_id": index_strat_id}
             headers = {"content-type": "text/plain"}
@@ -148,7 +146,7 @@ class VolosAPI:
 
             df = pd.json_normalize(x.json()['metrics'])
             df.insert(0, 'date', pd.Timestamp.today().strftime('%Y-%m-%d'))
-            df.insert(1, 'Strategy_id', strategy_id)
+            df.insert(1, 'Strategy_id', index_strat_id)
 
             ######## Columns to Percent ########
             cols_to_percentage = ['Annual_Returns', 'Downside_Risk', 'Sortino_Ratio',
