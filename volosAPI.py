@@ -132,8 +132,8 @@ class VolosAPI:
             x = requests.post(url, data=json.dumps(obj), headers=headers)
             output = 'date' + x.text
             data = [y.split(",") for y in output.split("\n")]
-            df = pd.DataFrame(data[1:], columns=data[0])
-            df.insert(1, 'Strategy_id', strategy_id)
+            df = pd.DataFrame(data[1:], columns=data[0]).dropna().tail(1).reset_index(drop=True)
+            df.insert(1, 'Strategy_id', index_strat_id)
 
         elif test_true_false:
             self.set_index_api()
