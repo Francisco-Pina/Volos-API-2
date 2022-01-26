@@ -158,6 +158,9 @@ class VolosAPI:
                           'Calmar_Ratio', 'Cum_Returns_Final', 'Downside_Risk', 'Max_Drawdown',
                           'Profit_Prob', 'Sharpe_Ratio', 'Sortino_Ratio', 'Tail_Ratio']]
 
+    def get_strategy_details(self, strategy_id):
+        pass
+
     def get_validation_data(self, strategy_id):
         self.set_strategy_api()
         endpoint = '/validation/get-validation-df'
@@ -179,10 +182,11 @@ class VolosAPI:
         return df
 
     def get_annual_returns(self, df):
-
-        returns_df = df.iloc[df.reset_index().groupby(df.date.to_period('Y'))['date'].idxmax()]
-
-        return None
+        date_series = pd.to_datetime(df['date'])
+        df = df.loc[date_series.dt.is_year_end].reset_index(drop=True)
+        df['annual_return'] = df['series_value'].pct_change()
+        df = df.dropna().reset_index(drop=True)
+        return df.loc[:, ['date', 'annual_return', 'Strategy_id']]
 
     def save_to_csv(self, df, name):
         """Saves file to current folder"""
