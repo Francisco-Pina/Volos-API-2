@@ -40,7 +40,6 @@ class VolosAPI:
         index_strat_id = None
 
         if strategy_id in index_df['strategy_id'].tolist() or strategy_id in index_df['index_ticker'].tolist():
-
             try:
                 index_id = index_df.loc[index_df['strategy_id'] == strategy_id, 'index_id'].item()
                 index_strat_id = index_df.loc[index_df['strategy_id'] == strategy_id, 'strategy_id'].item()
@@ -48,7 +47,6 @@ class VolosAPI:
             except:
                 index_id = index_df.loc[index_df['index_ticker'] == strategy_id, 'index_id'].item()
                 index_strat_id = index_df.loc[index_df['index_ticker'] == strategy_id, 'strategy_id'].item()
-
             return True, index_id, index_strat_id
 
         else:
@@ -74,26 +72,29 @@ class VolosAPI:
         df = None
 
         if not test_true_false:
+            try:
+                self.set_strategy_api()
+                endpoint = '/validation/get-validation-df'
+                url = self.get_url(endpoint=endpoint)
 
-            self.set_strategy_api()
-            endpoint = '/validation/get-validation-df'
-            url = self.get_url(endpoint=endpoint)
+                obj = {"strategy_id": strategy_id}
+                headers = {"x-api-key": self.volos_api_key}
 
-            obj = {"strategy_id": strategy_id}
-            headers = {"x-api-key": self.volos_api_key}
+                output = requests.post(url, data=json.dumps(obj), headers=headers).json()
 
-            output = requests.post(url, data=json.dumps(obj), headers=headers).json()
+                if list(output.keys())[0] == 'validation_csv_url':
+                    df = pd.read_csv(output['validation_csv_url'])
+                else:
+                    df = pd.json_normalize(output)
 
-            if list(output.keys())[0] == 'validation_csv_url':
-                df = pd.read_csv(output['validation_csv_url'])
-            else:
-                df = pd.json_normalize(output)
+                df = df.loc[:, ['date', 'index_value']]
+                df.columns = ['date', 'series_value']
+                df.dropna().reset_index(drop=True)
+                df['Strategy_id'] = strategy_id
+                df = df.loc[:, ['date', 'series_value', 'Strategy_id']]
 
-            df = df.loc[:, ['date', 'index_value']]
-            df.columns = ['date', 'series_value']
-            df.dropna().reset_index(drop=True)
-            df['Strategy_id'] = strategy_id
-            df = df.loc[:, ['date', 'series_value', 'Strategy_id']]
+            except ValueError as e:
+                return {'Error': str(e)}
 
         elif test_true_false:
             ####
@@ -132,7 +133,7 @@ class VolosAPI:
             output = 'date' + x.text
             data = [y.split(",") for y in output.split("\n")]
             df = pd.DataFrame(data[1:], columns=data[0])
-            df.insert(2, 'Strategy_id', strategy_id)
+            df.insert(1, 'Strategy_id', strategy_id)
 
         elif test_true_false:
             self.set_index_api()
@@ -145,10 +146,15 @@ class VolosAPI:
             headers = {"content-type": "text/plain"}
             x = requests.post(url, data=json.dumps(obj), headers=headers)
 
-            print(x.text)
+            df = pd.json_normalize(x.json()['metrics'])
+            df.insert(0, 'date', pd.Timestamp.today().strftime('%Y-%m-%d'))
+            df.insert(1, 'Strategy_id', strategy_id)
 
-            df = pd.json_normalize(x.json())
-            df['Strategy_id'] = test_index
+            ######## Columns to Percent ########
+            cols_to_percentage = ['Annual_Returns', 'Downside_Risk', 'Sortino_Ratio',
+                                  'Annual_Volatility', 'Max_Drawdown', 'Tail_Ratio', 'CAGR',
+                                  'Profit_Prob', 'Calmar_Ratio', 'Cum_Returns_Final']
+            df.loc[:, cols_to_percentage] = df.loc[:, cols_to_percentage].div(100, axis=0)
 
         return df
 
