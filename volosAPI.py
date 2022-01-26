@@ -37,19 +37,22 @@ class VolosAPI:
 
     def try_index_first(self, strategy_id):
         index_df = self.get_info_public_indexes()
+        index_strat_id = None
 
         if strategy_id in index_df['strategy_id'].tolist() or strategy_id in index_df['index_ticker'].tolist():
 
             try:
                 index_id = index_df.loc[index_df['strategy_id'] == strategy_id, 'index_id'].item()
+                index_strat_id = index_df.loc[index_df['strategy_id'] == strategy_id, 'strategy_id'].item()
 
             except:
                 index_id = index_df.loc[index_df['index_ticker'] == strategy_id, 'index_id'].item()
+                index_strat_id = index_df.loc[index_df['index_ticker'] == strategy_id, 'strategy_id'].item()
 
-            return True, index_id
+            return True, index_id, index_strat_id
 
         else:
-            return False, strategy_id
+            return False, strategy_id, index_strat_id
 
     def get_time_series_index(self, index_id):
         self.set_index_api()
@@ -67,9 +70,10 @@ class VolosAPI:
 
     def get_time_series(self, strategy_id):
 
-        test_t_f, test_index = self.try_index_first(strategy_id)
+        test_true_false, test_index, _ = self.try_index_first(strategy_id)
+        df = None
 
-        if test_t_f == False:
+        if not test_true_false:
 
             self.set_strategy_api()
             endpoint = '/validation/get-validation-df'
@@ -91,7 +95,7 @@ class VolosAPI:
             df['Strategy_id'] = strategy_id
             df = df.loc[:, ['date', 'series_value', 'Strategy_id']]
 
-        elif test_t_f == True:
+        elif test_true_false:
             ####
             df = self.get_time_series_index(test_index)
 
@@ -112,18 +116,40 @@ class VolosAPI:
         return df
 
     def get_metrics(self, strategy_id):
-        self.set_strategy_api()
-        endpoint = '/time-series/metrics'
-        url = self.get_url(endpoint=endpoint)
 
-        obj = {"strategy_id": strategy_id}
-        headers = {"x-api-key": self.volos_api_key}
+        test_true_false, test_index, index_strat_id = self.try_index_first(strategy_id)
+        df = None
 
-        x = requests.post(url, data=json.dumps(obj), headers=headers)
-        output = 'date' + x.text
-        data = [y.split(",") for y in output.split("\n")]
-        df = pd.DataFrame(data[1:], columns=data[0])
-        df.insert(2, 'Strategy_id', strategy_id)
+        if not test_true_false:
+            self.set_strategy_api()
+            endpoint = '/time-series/metrics'
+            url = self.get_url(endpoint=endpoint)
+
+            obj = {"strategy_id": strategy_id}
+            headers = {"x-api-key": self.volos_api_key}
+
+            x = requests.post(url, data=json.dumps(obj), headers=headers)
+            output = 'date' + x.text
+            data = [y.split(",") for y in output.split("\n")]
+            df = pd.DataFrame(data[1:], columns=data[0])
+            df.insert(2, 'Strategy_id', strategy_id)
+
+        elif test_true_false:
+            self.set_index_api()
+            endpoint = '/index_summary/prod/index_summary/metrics'
+            url = self.get_url(endpoint=endpoint)
+
+            print(index_strat_id)
+
+            obj = {"strategy_id": index_strat_id}
+            headers = {"content-type": "text/plain"}
+            x = requests.post(url, data=json.dumps(obj), headers=headers)
+
+            print(x.text)
+
+            df = pd.json_normalize(x.json())
+            df['Strategy_id'] = test_index
+
         return df
 
     def get_validation_data(self, strategy_id):
@@ -146,8 +172,11 @@ class VolosAPI:
 
         return df
 
-    def get_annual_returns(self):
-        pass
+    def get_annual_returns(self, df):
+
+        returns_df = df.iloc[df.reset_index().groupby(df.date.to_period('Y'))['date'].idxmax()]
+
+        return None
 
     def save_to_csv(self, df, name):
         """Saves file to current folder"""
@@ -172,9 +201,9 @@ class VolosAPI:
 
 
 if __name__ == "__main__":
-    temporary_file = open("../volos_api_key.txt", "rt")  # open lorem.txt for reading text
-    volos_api_key = temporary_file.read()  # read the entire file to string
-    temporary_file.close()  # close the file
+    temporary_file = open("../volos_api_key.txt", "rt")
+    volos_api_key = temporary_file.read()
+    temporary_file.close()
 
     vs = VolosAPI(volos_api_key=volos_api_key)
 
@@ -182,8 +211,8 @@ if __name__ == "__main__":
 
     df = vs.get_time_series(strategy_id)
 
-    # df_metrics = vs.get_metrics(strategy_id)
+    df_metrics = vs.get_metrics(strategy_id)
 
     # print(df)
     print(df)
-    print(df.columns)
+    print(df_metrics)
