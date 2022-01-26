@@ -153,6 +153,7 @@ class VolosAPI:
                                   'Annual_Volatility', 'Max_Drawdown', 'Tail_Ratio', 'CAGR',
                                   'Profit_Prob', 'Calmar_Ratio', 'Cum_Returns_Final']
             df.loc[:, cols_to_percentage] = df.loc[:, cols_to_percentage].div(100, axis=0)
+            print(df.columns)
 
         return df.loc[:, ['date', 'Strategy_id', 'Annual_Returns', 'Annual_Volatility', 'CAGR',
                           'Calmar_Ratio', 'Cum_Returns_Final', 'Downside_Risk', 'Max_Drawdown',
