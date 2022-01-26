@@ -154,7 +154,9 @@ class VolosAPI:
                                   'Profit_Prob', 'Calmar_Ratio', 'Cum_Returns_Final']
             df.loc[:, cols_to_percentage] = df.loc[:, cols_to_percentage].div(100, axis=0)
 
-        return df
+        return df.loc[:, ['date', 'Strategy_id', 'Annual_Returns', 'Annual_Volatility', 'CAGR',
+                          'Calmar_Ratio', 'Cum_Returns_Final', 'Downside_Risk', 'Max_Drawdown',
+                          'Profit_Prob', 'Sharpe_Ratio', 'Sortino_Ratio', 'Tail_Ratio']]
 
     def get_validation_data(self, strategy_id):
         self.set_strategy_api()
