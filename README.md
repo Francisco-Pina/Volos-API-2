@@ -1,5 +1,4 @@
 # Volos-API-2
-Second version of volos API using the Data API 
 
 ## Setup
 
@@ -17,12 +16,6 @@ The volosAPI is a tool that allows users to access data from the Volos software 
 To start, you can initiate the class with your API key and the strategy ID given by Volos 
 
 ```python
-import json
-import requests
-import pandas as pd
-import io
-import os
-import datetime
 import sys
 
 sys.path.insert(0, r'C:\Users\your\repo\here\Volos-API-2') # change to your local path
@@ -37,6 +30,7 @@ vs.switch_stage_ci()
 ## Use Cases
 
 ```python
+import pandas as pd
 import matplotlib.pyplot as plt
 
 # returns a DataFrame with the daily returns of a given strategy.
