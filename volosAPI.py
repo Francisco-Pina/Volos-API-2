@@ -25,7 +25,7 @@ import datetime
 
 class volosAPI(object):
     API_KEY = None
-    API_STAGE = 'prod'
+    API_STAGE = 'ci'
     API_ENDPOINT = 'https://api-data-ci-w1.volossoftware.com/'
 
     def __init__(self, api_key):
