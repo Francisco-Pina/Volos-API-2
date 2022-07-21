@@ -64,9 +64,9 @@ plt.show()
 trade_logs = vs.get_strategy_trade_logs(strategy_id)
 trade_logs.loc[trade_logs['transaction_date'] == '2022-05-18']
 
-# returns an IO with the positions of a given strategy on a given date.
+# returns a DataFrame with the positions of a given strategy on a given date.
 trade_positions = vs.get_strategy_positions(strategy_id, on_date='2022-05-26')
-trade_positions_df = pd.read_csv(trade_positions, index_col=[0])
+print(trade_positions)
 
 # returns a json with the metadata of a given list of strategies.
 multiple_meta_data = vs.get_strategy_list_meta_data([strategy_id,strategy_id_2])

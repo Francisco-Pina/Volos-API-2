@@ -92,7 +92,8 @@ class volosAPI(object):
         payload = {'strategy_id': strategy_id, 'on_date': on_date}
         res = requests.post(self.get_url(uri, api_stage=api_stage), data=json.dumps(payload),
                             headers=self.get_headers())
-        return json.loads(io.StringIO(res.content.decode('utf-8')).getvalue())['post_strategy_positions_csv_url']
+        temp_var = json.loads(io.StringIO(res.content.decode('utf-8')).getvalue())['post_strategy_positions_csv_url']
+        return pd.read_csv(temp_var, index_col=[0])
 
     def get_strategy_list_meta_data(self, strategy_id_list):
         uri = '/strategy/meta-data'
@@ -113,12 +114,6 @@ class volosAPI(object):
         res = requests.get(self.get_url(uri), params=payload, headers=self.get_headers())
         return res.url
         # return pd.read_excel(io.StringIO(res.content))
-
-    def search_by_ticker(self, ticker):
-        uri = '/search/ticker'
-        payload = {'ticker': ticker}
-        res = requests.post(self.get_url(uri), data=json.dumps(payload), headers=self.get_headers())
-        return pd.read_csv(io.StringIO(res.content.decode('utf-8')))
 
     def get_all_tags(self):
         uri = '/misc/all-tags'
@@ -179,21 +174,19 @@ class volosAPI(object):
 
 
 if __name__ == '__main__':
-    strategy_id = 'your_strategy_id_here'
-    vs = volosAPI(api_key="your_api_key_here")
-    vs.switch_stage_ci()
-    print(vs.get_strategy_total_returns(strategy_id))
-    # print(vs.get_strategy_list_total_returns([strategy_id]))
-    # print(vs.get_strategy_metrics(strategy_id))
-    # print('trade_logs', vs.get_strategy_trade_logs(strategy_id))
-    # print('strat positions', vs.get_strategy_positions(strategy_id, on_date='2022-01-03'))
-    # print('list meta data', vs.get_strategy_list_meta_data([strategy_id]))
-    # print('list tags', vs.get_strategy_list_tags(['strategy_id']))
-    # print('excel sheet', vs.get_strategy_excel_sheet(strategy_id))
-    # print('search ticker', vs.search_by_ticker('VOCCQQQ95'))  # there's a bug here, query searches for ticker in tag_name and there is no such value
+    strategy_id = 'your_strategy_id'
+    vs = volosAPI(api_key="your_api_key")
+    # print('get returns', vs.get_strategy_total_returns(strategy_id))
+    # print('get list returns', vs.get_strategy_list_total_returns([strategy_id]))
+    # print('get metrics', vs.get_strategy_metrics(strategy_id))
+    # print('get trade logs', vs.get_strategy_trade_logs(strategy_id))
+    # print('strategy positions', vs.get_strategy_positions(strategy_id, on_date='2022-01-03'))
+    # print('get list meta data', vs.get_strategy_list_meta_data([strategy_id]))
+    # print('get list tags', vs.get_strategy_list_tags(['strategy_id']))
+    # print('get excel sheet', vs.get_strategy_excel_sheet(strategy_id))
     # print('get all tags', vs.get_all_tags())
-    # print('get timeseries positions values', vs.get_timeseries_positions_values(strategy_id))
-    # print('get strat pos metadata', vs.get_strategy_positions_meta_data(strategy_id))
+    # print('get timeseries position values', vs.get_timeseries_positions_values(strategy_id))
+    # print('get strategy positions metadata', vs.get_strategy_positions_meta_data(strategy_id))
     # print('save positions to excel', vs.save_positions_to_excel(strategy_id))
     # print(vs.get_info_public_indexes())
 
